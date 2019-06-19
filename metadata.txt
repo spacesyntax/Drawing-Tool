@@ -1,0 +1,39 @@
+# This file contains metadata for your plugin. Since 
+# version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Drawing Tool
+qgisMinimumVersion=2.0
+description=Drawing tool for axial lines, segment lines and unlinks.
+version=0.1
+author=Space Syntax Limited
+email=i.kolovou@spaceyntax.com
+
+about=Provide a brief description of the plugin and its purpose.
+
+tracker=https://github.com/spacesyntax/Drawing-Tool
+repository=https://github.com/spacesyntax/Drawing-Tool
+# End of mandatory metadata
+
+# Recommended items:
+
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python
+
+homepage=https://github.com/spacesyntax/Drawing-Tool
+category=Vector
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
