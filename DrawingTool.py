@@ -187,8 +187,11 @@ class DrawingTool:
 
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
-        self.legend.itemAdded.disconnect(self.pop_networks)
-        self.legend.itemRemoved.disconnect(self.pop_networks)
+        self.legend.itemAdded.disconnect(self.pop_layer)
+        self.legend.itemRemoved.disconnect(self.rmv_layer)
+        self.dockwidget.networkCombo.currentIndexChanged.disconnect(self.dockwidget.update_settings)
+        self.dockwidget.unlinksCombo.currentIndexChanged.disconnect(self.dockwidget.update_settings)
+        self.dockwidget.toleranceSpin.valueChanged.disconnect(self.dockwidget.update_settings)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
@@ -222,17 +225,54 @@ class DrawingTool:
                     layers.append(layer.name())
         return layers
 
-    def pop_networks(self):
+    def pop_layers(self):
 
         self.dockwidget.networkCombo.clear()
         self.dockwidget.networkCombo.addItems(self.get_layers(1))
+        self.dockwidget.unlinksCombo.clear()
+        self.dockwidget.unlinksCombo.addItems(['no unlinks'] + self.get_layers(0))
+
         return
 
-    def pop_unlinks(self):
+    def pop_layer(self):
+        new = list(self.get_layers(1))
+        for l in self.networks:
+            try:
+                new.remove(l)
+            except ValueError:
+                pass
+        if len(new)>0:
+            print 'new', new, self.get_layers(1), self.networks
+            self.networks += new
+            self.dockwidget.networkCombo.addItems(new)
+        new = list(self.get_layers(0))
+        for l in self.unlinks:
+            try:
+                new.remove(l)
+            except ValueError:
+                pass
+        if len(new)>0:
+            self.unlinks += new
+            self.dockwidget.unlinksCombo.addItems(new)
+        return
 
-        self.dockwidget.unlinksCombo.clear()
-        self.dockwidget.unlinksCombo.addItems(self.get_layers(0))
-
+    def rmv_layer(self):
+        old = list(self.networks)
+        for l in self.get_layers(1):
+            print 'old', old
+            old.remove(l)
+        if len(old) > 0:
+            index = self.dockwidget.networkCombo.findText(old[0])
+            self.dockwidget.networkCombo.removeItem(index)
+            self.networks.remove(old[0])
+        old = list(self.unlinks)
+        for l in self.get_layers(0):
+            print 'old', old
+            old.remove(l)
+        if len(old) > 0:
+            self.unlinks.remove(old[0])
+            index = self.dockwidget.unlinksCombo.findText(old[0])
+            self.dockwidget.unlinksCombo.removeItem(index)
         return
 
     def run(self):
@@ -255,16 +295,18 @@ class DrawingTool:
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dockwidget)
             self.dockwidget.show()
 
             self.dockwidget.networkCombo.addItems(self.get_layers(1))
             self.dockwidget.unlinksCombo.addItems(['no unlinks'] + self.get_layers(0))
-            self.legend.itemAdded.connect(self.pop_networks)
-            self.legend.itemRemoved.connect(self.pop_networks)
-            self.legend.itemAdded.connect(self.pop_unlinks)
-            self.legend.itemRemoved.connect(self.pop_unlinks)
-            self.dockwidget.update_settings()
-            self.dockwidget.networkCombo.currentIndexChanged.connect(self.dockwidget.update_settings)
-            self.dockwidget.unlinksCombo.currentIndexChanged.connect(self.dockwidget.update_settings)
-            self.dockwidget.toleranceSpin.valueChanged.connect(self.dockwidget.update_settings)
+            self.dockwidget.update_network()
+            self.dockwidget.update_unlinks()
+            self.dockwidget.update_tolerance()
+            self.networks = self.get_layers(1)
+            self.unlinks = ['no unlinks'] + self.get_layers(0)
+            self.legend.itemAdded.connect(self.pop_layer)
+            self.legend.itemRemoved.connect(self.rmv_layer)
+            self.dockwidget.networkCombo.currentIndexChanged.connect(self.dockwidget.update_network)
+            self.dockwidget.unlinksCombo.currentIndexChanged.connect(self.dockwidget.update_unlinks)
+            self.dockwidget.toleranceSpin.valueChanged.connect(self.dockwidget.update_tolerance)
